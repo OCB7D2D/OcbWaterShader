@@ -1,0 +1,98 @@
+<configs>
+
+  <append xpath="/worldglobal">
+
+      <water>
+
+        <!-- load resources from asset bundle -->
+        <property name="shader" value="#@modfolder:Resources/OcbWaterShader.unity3d?ocbwatershader.shader"/>
+        <property name="distant" value="#@modfolder:Resources/OcbWaterShader.unity3d?ocbwaterdistant.shader"/>
+        <property name="albedo1" value="#@modfolder:Resources/OcbWaterShader.unity3d?textures/wateralbedo1.png"/>
+        <property name="albedo2" value="#@modfolder:Resources/OcbWaterShader.unity3d?textures/wateralbedo2.png"/>
+        <property name="normal1" value="#@modfolder:Resources/OcbWaterShader.unity3d?textures/waternormal1.png"/>
+        <property name="normal2" value="#@modfolder:Resources/OcbWaterShader.unity3d?textures/waternormal2.png"/>
+
+        <!-- configure main PBR shader properties -->
+        <property name="metallic" value="0.175"/>
+        <property name="glossiness" value="0.575"/>
+
+        <!-- water clarity params (start/end/power/offset) -->
+        <property name="clarity" value="0.125,12.5,0.425,0"/>
+
+        <!-- scales for the different textures -->
+        <property name="albedo1-scale" value="115,115"/>
+        <property name="normal1-scale" value="115,115"/>
+        <property name="albedo2-scale" value="232,236"/>
+        <property name="normal2-scale" value="232,236"/>
+
+        <!-- offsets for the different textures -->
+        <property name="albedo1-offset" value="0,0"/>
+        <property name="albedo2-offset" value="0,0"/>
+        <property name="normal1-offset" value="0,0"/>
+        <property name="normal2-offset" value="0,0"/>
+
+        <!-- movement flow for the different textures -->
+        <property name="albedo1-flow" value="1"/>
+        <property name="albedo2-flow" value="0.9"/>
+        <property name="normal1-flow" value="1"/>
+        <property name="normal2-flow" value="0.9"/>
+
+        <!-- normal strengths for various features -->
+        <property name="normal1-strength" value="0.175"/>
+        <property name="normal2-strength" value="0.325"/>
+        <property name="microwave-strength" value="0.225"/>
+        <property name="microwave-scale" value="0.725"/>
+
+        <!-- tint color for the albedo textures -->
+        <property name="albedo1-color" value="0.59,0.625,0.735,1"/>
+        <property name="albedo2-color" value="0.59,0.625,0.735,1"/>
+
+        <!-- color for shallow water -->
+        <property name="shore-color" value="0.37,0.38,0.39,1"/>
+        <!-- color for water surface -->
+        <property name="surface-color" value="0.5,0.52,0.535,1"/>
+
+        <!-- factors for final albedo color -->
+        <property name="surface-intensity" value="0.65"/>
+        <property name="surface-contrast" value="0.85"/>
+
+        <!-- settings for parallax module -->
+        <property name="parallax-strength" value="0.003"/>
+        <property name="parallax-flow" value="72"/>
+        <property name="parallax-albedo1-factor" value="1"/>
+        <property name="parallax-albedo2-factor" value="1"/>
+        <property name="parallax-normal1-factor" value="1"/>
+        <property name="parallax-normal2-factor" value="1"/>
+        <property name="parallax-noise-gain" value="0.526"/>
+        <property name="parallax-noise-amplitude" value="3"/>
+        <property name="parallax-noise-frequency" value="1"/>
+        <property name="parallax-noise-scale" value="1"/>
+        <property name="parallax-noise-lacunary" value="4"/>
+
+        <!-- settings for foam module -->
+        <property name="foam-soft" value="0,5,2.5,1.35"/>
+        <property name="foam-color" value="0.53,0.55,0.58,0"/>
+        <property name="foam-flow" value=".75"/>
+        <property name="foam-gain" value="0.6"/>
+        <property name="foam-amplitude" value="1.5"/>
+        <property name="foam-frequency" value="1"/>
+        <property name="foam-scale" value="1"/>
+        <property name="foam-lacunary" value="3.14"/>
+
+        <!-- settings for mirror module (not yet enabled) -->
+        <property name="mirror-strength" value="2.4"/>
+        <property name="mirror-color" value="0.19,0.15,0.17,0.5"/>
+        <property name="mirror-depth-color" value="0.0,0.0,0.0,0.5"/>
+        <property name="mirror-saturation" value="0.8"/>
+        <property name="mirror-contrast" value="1.5"/>
+        <property name="mirror-fpow" value="5"/>
+        <property name="mirror-r0" value="0.01"/>
+        <property name="mirror-wave-pow" value="0.5"/>
+        <property name="mirror-wave-scale" value="2"/>
+        <property name="mirror-wave-flow" value="2"/>
+
+      </water>
+
+  </append>
+
+</configs>

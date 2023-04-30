@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+	<ModInfo>
+		<Name value="OcbWaterShader" />
+		<Description value="Replace vanilla water shader for better visual fidelity." />
+		<Website value="https://github.com/OCB7D2D/OcbWaterShader" />
+		<Author value="ocbMaurice" />
+		<Version value="0.1.0" compat="A20"/>
+	</ModInfo>
+</xml>

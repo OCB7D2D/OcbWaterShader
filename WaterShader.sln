@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32002.261
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{e28d17d4-3c0c-4f8a-aae2-6cad8156340b}") = "WaterShader", "WaterShader.csproj", "{903211e4-2978-4469-9e70-7cc443dc1385}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{903211e4-2978-4469-9e70-7cc443dc1385}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{903211e4-2978-4469-9e70-7cc443dc1385}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{903211e4-2978-4469-9e70-7cc443dc1385}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{903211e4-2978-4469-9e70-7cc443dc1385}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {76a5b5b2-3beb-40e5-a4b3-89b8585b9eae}
+	EndGlobalSection
+EndGlobal

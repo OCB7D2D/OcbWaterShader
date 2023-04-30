@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9aafab5ec24e3a468cbf65f5c7e23b0, type: 3}
+  m_Name: AssetBundle
+  m_EditorClassIdentifier: 
+  Path: ..\..\Resources\OcbWaterShader.unity3d
+  IncludeAssetsFromFolders: 0
+  SearchFoldersRecursively: 0
+  CreateDeterministicAssetBundle: 1
+  AppendHashToAssetBundleName: 1
+  Compression: 1
+  VerboseLogging: 0
+  Objects:
+  - {fileID: 4800000, guid: 36d4d10e0bf943146a2a3a7eb68e2e1e, type: 3}
+  - {fileID: 4800000, guid: 52cf9fc123d95f84189fc4d3677bc71c, type: 3}
+  - {fileID: 2800000, guid: d6840f77873948aeba2cdce3985ccf47, type: 3}
+  - {fileID: 2800000, guid: 21cbc816b57948b196ced72a3c33a909, type: 3}
+  - {fileID: 2800000, guid: e7ee2ee1e448437e8de9a957ccc37298, type: 3}
+  - {fileID: 2800000, guid: b4b23fc51ba94ffab43b9704acdd1bfb, type: 3}
