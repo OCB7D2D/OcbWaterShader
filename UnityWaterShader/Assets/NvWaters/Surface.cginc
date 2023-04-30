@@ -12,7 +12,7 @@
 void vert(inout appdata_full v, out Input o) {
     #ifdef DISTANT_SHADER
         // move distant down
-        v.vertex.y -= 0.125;
+        v.vertex.y -= 0.075;
     #endif
     UNITY_INITIALIZE_OUTPUT(Input, o);
     /// UNITY_TRANSFER_FOG(o, o.position);
@@ -36,6 +36,12 @@ void vert(inout appdata_full v, out Input o) {
     #else
         o.Metallic = _Metallic;
         o.Smoothness = _Glossiness;
+    #endif
+
+    #ifdef SMOOTH_TRANSITION
+        float smooth = pow(smoothstep(SMOOTH_TRANSITION, 25, IN.eyeDepth), 1.5);
+        o.Smoothness *= smooth;
+        o.Metallic *= smooth;
     #endif
 
 }

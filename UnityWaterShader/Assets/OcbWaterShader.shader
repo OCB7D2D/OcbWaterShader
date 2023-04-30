@@ -135,6 +135,7 @@ Shader "OcbWaterShader" {
         #pragma target 3.0
 
         //----------------------------------------------
+        #define SMOOTH_TRANSITION 150
         #include "NvWaters/Config.cginc"
         #include "NvWaters/Structs.cginc"
         #include "NvWaters/Params.cginc"

@@ -142,6 +142,7 @@ Shader "OcbWaterDistant" {
 
         //----------------------------------------------
         #define DISTANT_SHADER
+        #define SMOOTH_TRANSITION 150
         #include "NvWaters/Config.cginc"
         #include "NvWaters/Structs.cginc"
         #include "NvWaters/Params.cginc"

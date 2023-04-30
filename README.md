@@ -207,6 +207,10 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 ## Changelog
 
+### Version 0.1.1
+
+- Add smooth transitions for reflections
+
 ### Version 0.1.0
 
 - Initial version
