@@ -7,8 +7,9 @@ public class OcbWaterShader : IModApi
 
     public void InitMod(Mod mod)
     {
-        Debug.Log("Loading OCB WaterShader Patch: " + GetType().ToString());
-        new Harmony(GetType().ToString()).PatchAll(Assembly.GetExecutingAssembly());
+        Log.Out("OCB Harmony Patch: " + GetType().ToString());
+        Harmony harmony = new Harmony(GetType().ToString());
+        harmony.PatchAll(Assembly.GetExecutingAssembly());
     }
 
 

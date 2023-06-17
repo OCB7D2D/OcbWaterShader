@@ -211,6 +211,7 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 - Update compatibility for 7D2D A21.0(b313)
 - Add initial weather/wind integration
+- Adjusted shader settings slightly
 
 ### Version 0.1.1
 
