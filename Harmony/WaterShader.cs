@@ -41,4 +41,30 @@ public class OcbWaterShader : IModApi
         }
     }
 
+    [HarmonyPatch(typeof(WeatherManager), "WindFrameUpdate")]
+    static class WeatherManagerWindFrameUpdate
+    {
+
+        static Vector2 RotateSpeed = new Vector2(0.4f, 0.4f);
+        static Vector2 RotateDistance = new Vector2(2.0f, 2.0f);
+        static Vector4 NvWatersMovement = new Vector4(0, 0, 0, 0);
+        static Vector2 wVectorX = new Vector2(0, 0);
+        static Vector2 wVectorY = new Vector2(0, 0);
+
+        static void Postfix(float ___windTime /*,
+            WindZone ___windZone, float ___windGust,
+            float ___windGustStep, float ___windGustTime*/)
+        {
+            var ax = Quaternion.AngleAxis(___windTime * RotateSpeed.x, Vector3.forward);
+            var ay = Quaternion.AngleAxis(___windTime * RotateSpeed.x, Vector3.forward);
+            wVectorX = ax * Vector2.one * RotateDistance.x;
+            wVectorY = ay * Vector2.one * RotateDistance.y;
+            NvWatersMovement.x = wVectorX.x * RotateDistance.x;
+            NvWatersMovement.y = wVectorX.y * RotateDistance.x;
+            NvWatersMovement.z = wVectorY.x * RotateDistance.y;
+            NvWatersMovement.w = wVectorY.y * RotateDistance.y;
+            Shader.SetGlobalVector("_NvWatersMovement", NvWatersMovement);
+        }
+    }
+
 }

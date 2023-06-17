@@ -17,7 +17,7 @@
         <property name="glossiness" value="0.575"/>
 
         <!-- water clarity params (start/end/power/offset) -->
-        <property name="clarity" value="0.125,12.5,0.425,0"/>
+        <property name="clarity" value="0.175,12.5,0.425,0"/>
 
         <!-- scales for the different textures -->
         <property name="albedo1-scale" value="115,115"/>
@@ -48,9 +48,9 @@
         <property name="albedo2-color" value="0.59,0.625,0.735,1"/>
 
         <!-- color for shallow water -->
-        <property name="shore-color" value="0.37,0.38,0.39,1"/>
+        <property name="shore-color" value="0.37,0.38,0.43,1"/>
         <!-- color for water surface -->
-        <property name="surface-color" value="0.5,0.52,0.535,1"/>
+        <property name="surface-color" value="0.4,0.42,0.535,1"/>
 
         <!-- factors for final albedo color -->
         <property name="surface-intensity" value="0.65"/>
@@ -70,7 +70,7 @@
         <property name="parallax-noise-lacunary" value="4"/>
 
         <!-- settings for foam module -->
-        <property name="foam-soft" value="0,5,2.5,1.35"/>
+        <property name="foam-soft" value="-5,5,2.5,1.35"/>
         <property name="foam-color" value="0.53,0.55,0.58,0"/>
         <property name="foam-flow" value=".75"/>
         <property name="foam-gain" value="0.6"/>

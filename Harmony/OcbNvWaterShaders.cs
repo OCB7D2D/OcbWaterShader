@@ -19,11 +19,11 @@ public class OcbNvWaterShaders : MonoBehaviour
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    public Vector2 rotateSpeed = new Vector2(0.4f, 0.4f);
-    public Vector2 rotateDistance = new Vector2(2.0f, 2.0f);
+    // public Vector2 rotateSpeed = new Vector2(0.4f, 0.4f);
+    // public Vector2 rotateDistance = new Vector2(2.0f, 2.0f);
     public bool depthTextureModeOn = true;
-    public bool waterSyncWind;
-    public Transform windZone;
+    // public bool waterSyncWind;
+    // public Transform windZoneTransform;
     public bool mirrorOn = false;
     public bool mirrorBackSide = false;
     public int textureSize = 1024;
@@ -34,7 +34,7 @@ public class OcbNvWaterShaders : MonoBehaviour
     //--------------
 
     Transform thisTransform;
-    Vector2 wVectorX, wVectorY;
+    // Vector2 wVectorX, wVectorY;
     Vector3 ccLastpos;
     Renderer thisRenderer;
     Camera currentCamera, reflectionCamera;
@@ -53,8 +53,8 @@ public class OcbNvWaterShaders : MonoBehaviour
 
         thisTransform = transform;
         thisRenderer = GetComponent<Renderer>();
-        wVectorX = Vector2.zero;
-        wVectorY = Vector2.zero;
+        // wVectorX = Vector2.zero;
+        // wVectorY = Vector2.zero;
         //if (depthTextureModeOn) Camera.main.depthTextureMode = DepthTextureMode.Depth;
 
         //--------------
@@ -64,6 +64,21 @@ public class OcbNvWaterShaders : MonoBehaviour
     {
         if (depthTextureModeOn) Camera.main.depthTextureMode = DepthTextureMode.Depth;
     }
+
+    /*
+    private GameObject windZoneGO;
+    private WindZone windZone;
+
+    void Start()
+    {
+        windZone = null;
+        waterSyncWind = false;
+        windZoneGO = GameObject.Find("WindZone");
+        if (windZoneGO == null) return;
+        windZone = windZoneGO.GetComponent<WindZone>();
+        waterSyncWind = true;
+    }
+    */
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -110,7 +125,7 @@ public class OcbNvWaterShaders : MonoBehaviour
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+    /*
     void LateUpdate()
     {
         //--------------
@@ -119,13 +134,16 @@ public class OcbNvWaterShaders : MonoBehaviour
         {
             wVectorX = Quaternion.AngleAxis(Time.time * rotateSpeed.x, Vector3.forward) * Vector2.one * rotateDistance.x;
             wVectorY = Quaternion.AngleAxis(Time.time * rotateSpeed.y, Vector3.forward) * Vector2.one * rotateDistance.y;
-            if (windZone != null) windZone.rotation = Quaternion.LookRotation(new Vector3(wVectorY.x, 0, wVectorY.y), Vector3.zero) * Quaternion.Euler(0, -90, 0);
+            if (windZoneTransform != null) windZoneTransform.rotation = Quaternion.LookRotation(
+                new Vector3(wVectorY.x, 0, wVectorY.y), Vector3.zero) * Quaternion.Euler(0, -90, 0);
         }
         else
         {
-            if (windZone != null)
+            if (windZoneTransform != null)
             {
-                Quaternion windQ = new Quaternion(windZone.rotation.x, windZone.rotation.z, windZone.rotation.y, -windZone.rotation.w);
+                Quaternion windQ = new Quaternion(
+                    windZoneTransform.rotation.x, windZoneTransform.rotation.z,
+                    windZoneTransform.rotation.y, -windZoneTransform.rotation.w);
                 Vector3 windV = windQ * Vector3.up * 0.2f;
                 wVectorX = windV * Time.time * rotateSpeed.x;
                 wVectorY = windV * Time.time * rotateSpeed.y;
@@ -136,7 +154,7 @@ public class OcbNvWaterShaders : MonoBehaviour
 
         //--------------
     }
-
+    */
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
