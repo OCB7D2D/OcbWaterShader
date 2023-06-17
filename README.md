@@ -1,4 +1,4 @@
-# OCB Water Shader Mod  - 7 Days to Die (A20) Addon
+# OCB Water Shader Mod  - 7 Days to Die (A21) Addon
 
 Replacing vanilla water shader with an improved version [based on][4]:  
 https://github.com/nvjob/nvjob-water-shader-simple-and-fast
@@ -207,6 +207,10 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 ## Changelog
 
+### Version 0.2.0
+
+- Update compatibility for 7D2D A21.0(b313)
+
 ### Version 0.1.1
 
 - Add smooth transitions for reflections
@@ -217,7 +221,7 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 ## Compatibility
 
-I've developed and tested this Mod against version a20.7(b1).
+Developed initially for version a20.7(b1), updated through A21.0(b313).
 
 [1]: https://github.com/OCB7D2D/OcbWaterShader
 [2]: https://github.com/OCB7D2D/OcbWaterShader/releases

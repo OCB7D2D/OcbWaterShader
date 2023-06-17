@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System.Xml;
+using System.Xml.Linq;
 using UnityEngine;
 using static StringParsers;
 
@@ -191,14 +192,12 @@ public class WaterXmlConfig
         static void Prefix(XmlFile _xmlFile)
         {
             if (GameManager.IsDedicatedServer) return;
-            foreach (XmlNode node in _xmlFile.XmlDoc.DocumentElement.ChildNodes)
+            foreach (XElement node in _xmlFile.XmlDoc.Root.Elements())
             {
                 if (node.Name != "water") continue;
-                foreach (XmlNode subnode in node.ChildNodes)
+                foreach (XElement child in node.Elements())
                 {
-                    if (subnode.Name != "property") continue;
-                    if (subnode.NodeType != XmlNodeType.Element) continue;
-                    XmlElement child = subnode as XmlElement;
+                    if (child.Name != "property") continue;
                     string value = child.GetAttribute("value");
                     switch (child.GetAttribute("name"))
                     {

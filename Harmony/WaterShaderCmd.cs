@@ -6,12 +6,12 @@ public class WaterShaderCmd : ConsoleCmdAbstract
 {
 
     private static string info = "watershader";
-    public override string[] GetCommands()
+    protected override string[] getCommands()
     {
         return new string[2] { info, "ws" };
     }
 
-    public override string GetDescription()
+    protected override string getDescription()
     {
         return "Adjust settings for Water shaders";
     }
