@@ -122,9 +122,9 @@ ws props
 
 > // Base PBR lighting config  
 > Range _Metallic => 0.175  
-> Range _Glossiness => 0.575  
+> Range _Smoothness => 0.575  
 > // Water clarity params (start/end/power/offset)  
-> Vector _Clarity => (0.1, 12.5, 0.4, 0.0)  
+> Vector _WaterClarity => (0.1, 12.5, 0.4, 0.0)  
 > // Flow speeds of texture UVs  
 > Float _Albedo1Flow => 1  
 > Float _Albedo2Flow => 0.9  
@@ -206,6 +206,11 @@ ws set o _NormalMap1 7,13 // set uv offset
 ```
 
 ## Changelog
+
+### Version 0.3.0
+
+- Add geometry tessellation for waves
+- Adjust color schema to be a lot darker
 
 ### Version 0.2.0
 
