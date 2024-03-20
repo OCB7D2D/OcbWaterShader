@@ -7,7 +7,7 @@
 // Support this asset - https://nvjob.github.io/donate
 // Modifed for 7D2D by https://github.com/OCB7D2D/
 
-Shader "OcbWaterDistant" {
+Shader "OcbWaterDistantLow" {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@ Shader "OcbWaterDistant" {
         [HDR] _SurfaceColor("Surface Color", Color) = (0.5, 0.5, 0.5, 1)
 
         _Metallic("Metallic", Range(-1, 2)) = 0.0
-        _Glossiness("Glossiness", Range(0, 1)) = 0.5
+        _Smoothness("Smoothness", Range(0, 1)) = 0.5
         // _Shininess("Shininess", Range(0.01, 1)) = 0.15
 
         _SurfaceIntensity("Brightness", Range(0.1, 5)) = 1
@@ -108,6 +108,22 @@ Shader "OcbWaterDistant" {
         _FoamSoft("Foam Soft", Vector) = (0.25, 0.6, 1, 0)
 
         //----------------------------------------------
+        // Distant Resampling
+        //----------------------------------------------
+        _DistantResampleParams("Distant Resample Params", Vector) = (0.25, 20, 40)
+        _DistantResampleNoise("Distant Resample Noise", Vector) = (0.5, 0.5, 0, 0)
+        _SmoothTransition("Smooth Transition", Vector) = (25, 250, 0.75, 0)
+
+        //----------------------------------------------
+        // Tessellation options
+        //----------------------------------------------
+        _TessMinDist("Tessellation Max Distance", Range(0,250)) = 15 // for default mode
+        _TessMaxDist("Tessellation Min Distance", Range(0,500)) = 80 // for default mode
+        _TessSubdivide("Tessellation Subdivision", Range(1,32)) = 4 // for default mode
+        _TessEdgeLength("Tessellation Edge Length", Range(1,256)) = 64 // for edge mode
+        _TessMaxDisp("Tessellation Max Displacement", Range(1,256)) = 0.5 // edge cull mode
+
+        //----------------------------------------------
         // 7D2D specific uniforms
         //----------------------------------------------
         _Clarity("Water Clarity", Vector) = (0, 5, 2, 0)
@@ -116,9 +132,13 @@ Shader "OcbWaterDistant" {
         // _OriginPos("World Origin Shift", Vector) = (0, 0, 0, 0)
 
         //----------------------------------------------
+        // Options only for distant shader
         //----------------------------------------------
         // For distant shader to clip loaded chunks
         _ClipChunks("ClipChunks", 2D) = "black" { }
+
+        // _WindTime("Wind Time", Range(-9999,9999)) = 0
+        // _Wind("Wind Speed", Range(1,32)) = 4
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,27 +147,34 @@ Shader "OcbWaterDistant" {
     SubShader{
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Tags{ "Queue" = "Geometry+502" "RenderType" = "Transparent" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"  }
+        // Transparent-1 -> weird artifacts with biome particles
+        // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
+        Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
         //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
-        Cull Off
-        ZWrite Off
+        // Cull Off
+        // ZWrite Off
 
         CGPROGRAM
 
-        #pragma surface surf Standard vertex:vert alpha:fade
+        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade
+        // #pragma surface surf Standard addshadow fullforwardshadows vertex:vert tessellate:tess alpha:fade nolightmap
+        // #pragma surface surf Standard vertex:vert alpha:fade
         // exclude_path:prepass noshadowmask noshadow
 
-        #pragma target 3.0
+        float _Phong;
+        #pragma target 4.6
 
         //----------------------------------------------
+        #define QUALITY_LOW
         #define DISTANT_SHADER
-        #define SMOOTH_TRANSITION 150
         #include "NvWaters/Config.cginc"
         #include "NvWaters/Structs.cginc"
         #include "NvWaters/Params.cginc"
+        #include "NvWaters/Noise.cginc"
         #include "NvWaters/Functions.cginc"
         #include "NvWaters/Surface.cginc"
+        #include "NvWaters/Tessellate.cginc"
         //----------------------------------------------
 
         ENDCG

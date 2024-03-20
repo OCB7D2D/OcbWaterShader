@@ -7,16 +7,56 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "Tessellation.cginc"
+
+float4 tess (appdata_full v0, appdata_full v1, appdata_full v2)
+{
+    #ifdef EFFECT_TESSELLATE
+        #if defined(TESS_LENGTH_ALL)
+            return UnityEdgeLengthBasedTess(v0.vertex, v1.vertex, v2.vertex,
+                    _TessEdgeLength);
+        #elif defined(TESS_LENGTH_CULL)
+            return UnityEdgeLengthBasedTessCull(v0.vertex, v1.vertex, v2.vertex,
+                    _TessEdgeLength, _TessMaxDisp);
+        #else // default mode is to tesselate based on distance
+            return UnityDistanceBasedTess(v0.vertex, v1.vertex, v2.vertex,
+                    _TessMinDist, _TessMaxDist, _TessSubdivide);
+        #endif
+    #else
+        return float4(1,1,1,0);
+    #endif
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void vert(inout appdata_full v, out Input o) {
+void vert (inout appdata_full v)
+{
     #ifdef DISTANT_SHADER
         // move distant down
         v.vertex.y -= 0.075;
     #endif
-    UNITY_INITIALIZE_OUTPUT(Input, o);
-    /// UNITY_TRANSFER_FOG(o, o.position);
-    COMPUTE_EYEDEPTH(o.eyeDepth);
+    #ifdef EFFECT_TESSELLATE
+        // Calculate world position to use for noise sampling
+        float3 wp = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1));
+        // UV coordinates to sample wave noise
+        float2 uv = wp.xz * 0.5;
+        // Move uv with wind
+        #ifdef EFFECT_WIND
+            uv += _WindTime;
+        #endif
+        // Sample noise algorithm
+        float noise = Noise2D(uv);
+        // Muliply with wind speed
+        #ifdef EFFECT_WIND
+            noise *= _Wind;
+        #endif
+        // Modify the vertex to form waves
+        v.vertex.y += (noise * 0.5) - 0.25;
+        // Store noise value for fragment shader
+        v.color.r = noise;
+    #endif
+    // Transfer eye-depth to fragment shader
+    COMPUTE_EYEDEPTH(v.color.a);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,11 +75,19 @@ void vert(inout appdata_full v, out Input o) {
         o.Gloss = tex.a;
     #else
         o.Metallic = _Metallic;
-        o.Smoothness = _Glossiness;
+        o.Smoothness = _Smoothness;
     #endif
 
-    #ifdef SMOOTH_TRANSITION
-        float smooth = pow(smoothstep(SMOOTH_TRANSITION, 25, IN.eyeDepth), 1.5);
+    #ifdef EFFECT_WIND
+        // Accentuate smoothness if it is windy
+        // More reflective when weather is calm
+        o.Smoothness *= 1 - _Wind * 0.425;
+    #endif
+
+    // Transition smoothness to avoid distant shader to look odd
+    // Seems reflection is only done for the close/detail terrain
+    #ifdef EFFECT_SMOOTH_TRANSITION
+        float smooth = pow(smoothstep(_SmoothTransition.y,  _SmoothTransition.x, IN.color.a), _SmoothTransition.z);
         o.Smoothness *= smooth;
         o.Metallic *= smooth;
     #endif

@@ -5,23 +5,47 @@ using UnityEngine;
 public class OcbWaterShader : IModApi
 {
 
+    // True once when config was loaded
+    public static bool IsLoaded = false;
+
     public void InitMod(Mod mod)
     {
         Log.Out("OCB Harmony Patch: " + GetType().ToString());
         Harmony harmony = new Harmony(GetType().ToString());
         harmony.PatchAll(Assembly.GetExecutingAssembly());
+        ModEvents.GameShutdown.RegisterHandler(OnGameShutdown);
     }
 
+    // Hook to reset the loaded flag
+    private void OnGameShutdown()
+    {
+        IsLoaded = false;
+    }
 
+    // Hook to load our own water shader by quality
     [HarmonyPatch(typeof(MeshDescription), "SetWaterQuality")]
-    static class PatchSetWaterQuality
+    static class MeshDescriptionSetWaterQualityPatch
     {
         static bool Prefix()
         {
+            if (IsLoaded == false) return true; // Let vanilla do early initialization
+            if (GameManager.IsDedicatedServer || MeshDescription.meshes == null) return false;
+            if (MeshDescription.MESH_WATER >= MeshDescription.meshes.Length) return false;
+            switch (GamePrefs.GetInt(EnumGamePrefs.OptionsGfxWaterQuality))
+            {
+                case 0:
+                    WaterXmlConfig.LoadWaterShader("Low");
+                    break;
+                default:
+                    WaterXmlConfig.LoadWaterShader("High");
+                    break;
+            }
             return false;
         }
     }
 
+/*
+    // Was only required to do the reflection?
     [HarmonyPatch(typeof(UnityDistantTerrainTest), "LoadTerrain")]
     static class PatchLoadTerrain
     {
@@ -41,7 +65,9 @@ public class OcbWaterShader : IModApi
             }
         }
     }
+*/
 
+    // Hook to animate the wind zone a bit more than vanilla
     [HarmonyPatch(typeof(WeatherManager), "WindFrameUpdate")]
     static class WeatherManagerWindFrameUpdate
     {

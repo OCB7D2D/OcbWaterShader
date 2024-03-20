@@ -1,5 +1,18 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+float WaterViewDepth(Input IN) {
+    float rawZ = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, UNITY_PROJ_COORD(IN.screenPos));
+    return DECODE_EYEDEPTH(rawZ) - IN.color.a; // delta between ground (z-buffer) and surface
+}
+
+float WaterClarity(float depth) {
+    depth = smoothstep(_Clarity.x, _Clarity.y, depth);
+    depth = pow(depth, _Clarity.z);
+    return depth;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 float Noise(float2 uv, float gain, float amplitude, float frequency, float scale, float lacunary, float octaves) {
     float result;
     float frequencyL = frequency;
@@ -75,19 +88,6 @@ float Noise(float2 uv, float gain, float amplitude, float frequency, float scale
         return reflcol * fresnel + half4(refrColor.xyz, 1.0) * (1.0 - fresnel);
     }
 #endif
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-float WaterViewDepth(Input IN) {
-    float rawZ = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, UNITY_PROJ_COORD(IN.screenPos));
-    return DECODE_EYEDEPTH(rawZ) - IN.eyeDepth;
-}
-
-float WaterClarity(float depth, Input IN) {
-    depth = smoothstep(_Clarity.x, _Clarity.y, depth);
-    depth = pow(depth, _Clarity.z);
-    return depth;
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

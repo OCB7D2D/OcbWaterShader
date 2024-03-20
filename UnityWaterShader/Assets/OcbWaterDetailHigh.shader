@@ -1,11 +1,13 @@
-﻿// Copyright (c) 2016 Unity Technologies. MIT license - license_unity.txt
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Copyright (c) 2016 Unity Technologies. MIT license - license_unity.txt
 // #NVJOB Water Shaders. MIT license - license_nvjob.txt
 // #NVJOB Water Shaders v2.0 - https://nvjob.github.io/unity/nvjob-water-shaders-v2
 // #NVJOB Nicholas Veselov - https://nvjob.github.io
 // Support this asset - https://nvjob.github.io/donate
 // Modifed for 7D2D by https://github.com/OCB7D2D/
 
-Shader "OcbWaterShader" {
+Shader "OcbWaterDetailHigh" {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,12 +18,12 @@ Shader "OcbWaterShader" {
         [HDR] _SurfaceColor("Surface Color", Color) = (0.5, 0.5, 0.5, 1)
 
         _Metallic("Metallic", Range(-1, 2)) = 0.0
-        _Glossiness("Glossiness", Range(0, 1)) = 0.5
+        _Smoothness("Smoothness", Range(0, 1)) = 0.5
         // _Shininess("Shininess", Range(0.01, 1)) = 0.15
 
         _SurfaceIntensity("Brightness", Range(0.1, 5)) = 1
         _SurfaceContrast("Contrast", Range(-0.5, 3)) = 1
-        
+
         //----------------------------------------------
         //----------------------------------------------
         [HDR] _Albedo1Color("Albedo 1 Color", Color) = (1,1,1,1)
@@ -68,7 +70,7 @@ Shader "OcbWaterShader" {
         _ParallaxNoiseFrequency("Parallax Noise Frequency", Range(0.0 , 6.0)) = 1
         _ParallaxNoiseScale("Parallax Noise Scale", Float) = 1
         _ParallaxNoiseLacunary("Parallax Noise Lacunary", Range(1 , 6)) = 4
-        
+
         //----------------------------------------------
         // #ifdef EFFECT_REFLECTION
         //----------------------------------------------
@@ -106,6 +108,22 @@ Shader "OcbWaterShader" {
         _FoamSoft("Foam Soft", Vector) = (0.25, 0.6, 1, 0)
 
         //----------------------------------------------
+        // Distant Resampling
+        //----------------------------------------------
+        _DistantResampleParams("Distant Resample Params", Vector) = (0.25, 20, 40)
+        _DistantResampleNoise("Distant Resample Noise", Vector) = (0.5, 0.5, 0, 0)
+        _SmoothTransition("Smooth Transition", Vector) = (25, 250, 0.75, 0)
+
+        //----------------------------------------------
+        // Tessellation options
+        //----------------------------------------------
+        _TessMinDist("Tessellation Max Distance", Range(0,250)) = 15 // for default mode
+        _TessMaxDist("Tessellation Min Distance", Range(0,500)) = 80 // for default mode
+        _TessSubdivide("Tessellation Subdivision", Range(1,32)) = 4 // for default mode
+        _TessEdgeLength("Tessellation Edge Length", Range(1,256)) = 64 // for edge mode
+        _TessMaxDisp("Tessellation Max Displacement", Range(1,256)) = 0.5 // edge cull mode
+
+        //----------------------------------------------
         // 7D2D specific uniforms
         //----------------------------------------------
         _Clarity("Water Clarity", Vector) = (0, 5, 2, 0)
@@ -113,6 +131,14 @@ Shader "OcbWaterShader" {
         // Never activate this, as it will overwrite global uniform!
         // _OriginPos("World Origin Shift", Vector) = (0, 0, 0, 0)
 
+        //----------------------------------------------
+        // Options only for distant shader
+        //----------------------------------------------
+        // For distant shader to clip loaded chunks
+        // _ClipChunks("ClipChunks", 2D) = "black" { }
+
+        // _WindTime("Wind Time", Range(-9999,9999)) = 0
+        // _Wind("Wind Speed", Range(1,32)) = 4
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,26 +147,34 @@ Shader "OcbWaterShader" {
     SubShader{
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        Tags{ "Queue" = "Geometry+501" "RenderType" = "Transparent" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"  }
+        // Transparent-1 -> weird artifacts with biome particles
+        // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
+        Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
         //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
-        Cull Off
-        ZWrite Off
+        // Cull Off
+        // ZWrite Off
 
         CGPROGRAM
 
-        #pragma surface surf Standard vertex:vert alpha:fade
+        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade
+        // #pragma surface surf Standard addshadow fullforwardshadows vertex:vert tessellate:tess alpha:fade nolightmap
+        // #pragma surface surf Standard vertex:vert alpha:fade
         // exclude_path:prepass noshadowmask noshadow
 
-        #pragma target 3.0
+        float _Phong;
+        #pragma target 4.6
 
         //----------------------------------------------
-        #define SMOOTH_TRANSITION 150
+        #define QUALITY_HIGH
+        #define DETAIL_SHADER
         #include "NvWaters/Config.cginc"
         #include "NvWaters/Structs.cginc"
         #include "NvWaters/Params.cginc"
+        #include "NvWaters/Noise.cginc"
         #include "NvWaters/Functions.cginc"
         #include "NvWaters/Surface.cginc"
+        #include "NvWaters/Tessellate.cginc"
         //----------------------------------------------
 
         ENDCG

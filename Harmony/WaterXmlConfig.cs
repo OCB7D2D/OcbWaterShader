@@ -10,11 +10,17 @@ public class WaterXmlConfig
     // Replacement shaders to load afterwards
     public static DataLoader.DataPathIdentifier ShaderNearPath;
     public static DataLoader.DataPathIdentifier ShaderDistPath;
+    // Alternative shader for mac os metal variant
+    public static DataLoader.DataPathIdentifier MetalShaderNearPath;
+    public static DataLoader.DataPathIdentifier MetalShaderDistPath;
+    // The actual loaded shaders
     public static Shader ShaderNear;
     public static Shader ShaderDist;
     // Base PBR lighting config
     public static float Metallic = 0.175f;
-    public static float Glossiness = 0.725f;
+    public static float Smoothness = 0.725f;
+    // Smooth transition to distant shader
+    public static Vector3 SmoothTransition;
     // Water clarity params (start/end/power/offset)
     public static Vector4 Clarity = new Vector4(0.125f, 12.5f, 0.425f, 0);
     // Main textures to load afterwards
@@ -87,12 +93,22 @@ public class WaterXmlConfig
     public static float MirrorWavePow = 0.5f;
     public static float MirrorWaveScale = 2;
     public static float MirrorWaveFlow = 2;
+    // Settings for tessellation module
+    public static float TessMinDist = 15;
+    public static float TessMaxDist = 80;
+    public static float TessSubdivide = 4;
+    public static float TessEdgeLength = 64;
+    public static float TessMaxDisp = 0.5f;
+
 
     public static void SetupWaterMaterial(Material water)
     {
 
         water.SetFloat("_Metallic", WaterXmlConfig.Metallic);
-        water.SetFloat("_Glossiness", WaterXmlConfig.Glossiness);
+        water.SetFloat("_Smoothness", WaterXmlConfig.Smoothness);
+
+        // Params for smooth transition to distant shader (min/max/details)
+        water.SetVector("_SmoothTransition", WaterXmlConfig.SmoothTransition);
 
         water.SetVector("_Clarity", WaterXmlConfig.Clarity);
 
@@ -164,6 +180,17 @@ public class WaterXmlConfig
         water.SetFloat("_FoamScale", WaterXmlConfig.FoamScale);
         water.SetFloat("_FoamLacunary", WaterXmlConfig.FoamLacunary);
 
+        // Settings for distant resampling
+        water.SetVector("_DistantResampleParams", new Vector3(0.5f, 50, 800));
+        water.SetVector("_DistantResampleNoise", new Vector2(0.5f, 0.5f));
+
+        // Settings for tessellation module
+        water.SetFloat("_TessMinDist", WaterXmlConfig.TessMinDist);
+        water.SetFloat("_TessMaxDist", WaterXmlConfig.TessMaxDist);
+        water.SetFloat("_TessSubdivide", WaterXmlConfig.TessSubdivide);
+        water.SetFloat("_TessEdgeLength", WaterXmlConfig.TessEdgeLength);
+        water.SetFloat("_TessMaxDisp", WaterXmlConfig.TessMaxDisp);
+
         // Below uniforms are only for specular setup
 
         // [HideInInspector]_Shininess("Shininess", Range(0.01, 1)) = 0.15
@@ -186,6 +213,42 @@ public class WaterXmlConfig
 
     }
 
+    public static void LoadWaterShader(string quality)
+    {
+        // We should be able to assign to water mesh description by now!?
+        if (MeshDescription.MESH_WATER >= MeshDescription.meshes?.Length) return;
+        MeshDescription mesh = MeshDescription.meshes[MeshDescription.MESH_WATER];
+
+        // Load the resources define by configuration
+        bool is_metal = SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Metal;
+        var path_near = is_metal ? MetalShaderNearPath : ShaderNearPath;
+        var path_dist = is_metal ? MetalShaderDistPath : ShaderDistPath;
+        path_near = new DataLoader.DataPathIdentifier(string.Format(path_near.AssetName, quality), path_near.BundlePath);
+        path_dist = new DataLoader.DataPathIdentifier(string.Format(path_dist.AssetName, quality), path_dist.BundlePath);
+        Log.Out("Load detail water shader {0}", path_near.AssetName);
+        if (path_near.IsBundle) ShaderNear = DataLoader.LoadAsset<Shader>(path_near);
+        Log.Out("Load distant water shader {0}", path_dist.AssetName);
+        if (path_dist.IsBundle) ShaderDist = DataLoader.LoadAsset<Shader>(path_dist);
+        if (Albedo1Path.IsBundle) Albedo1 = DataLoader.LoadAsset<Texture>(Albedo1Path);
+        if (Albedo2Path.IsBundle) Albedo2 = DataLoader.LoadAsset<Texture>(Albedo2Path);
+        if (Normal1Path.IsBundle) Normal1 = DataLoader.LoadAsset<Texture>(Normal1Path);
+        if (Normal2Path.IsBundle) Normal2 = DataLoader.LoadAsset<Texture>(Normal2Path);
+        // Load the near water shader
+        if (ShaderNearPath.IsBundle)
+        {
+            mesh.material.shader = ShaderNear;
+            SetupWaterMaterial(mesh.material);
+            Log.Out("Loaded detail water shader => {0}", ShaderNear);
+        }
+        // Load the distant water shader
+        if (ShaderDistPath.IsBundle)
+        {
+            mesh.materialDistant.shader = ShaderDist;
+            SetupWaterMaterial(mesh.materialDistant);
+            Log.Out("Loaded distant water shader => {0}", ShaderDist);
+        }
+    }
+
     [HarmonyPatch(typeof(WorldGlobalFromXml), "Load")]
     static class PatchWorldGlobalFromXmlLoad
     {
@@ -204,9 +267,13 @@ public class WaterXmlConfig
                         // Replacement shaders to load afterwards
                         case "shader": ShaderNearPath = DataLoader.ParseDataPathIdentifier(value); break;
                         case "distant": ShaderDistPath = DataLoader.ParseDataPathIdentifier(value); break;
+                        case "mac-shader": MetalShaderNearPath = DataLoader.ParseDataPathIdentifier(value); break;
+                        case "mac-distant": MetalShaderDistPath = DataLoader.ParseDataPathIdentifier(value); break;
                         // Base PBR lighting config
                         case "metallic": Metallic = ParseFloat(value); break;
-                        case "glossiness": Glossiness = ParseFloat(value); break;
+                        case "smoothness": Smoothness = ParseFloat(value); break;
+                        // Smooth transition to distant shader to avoid reflection issues
+                        case "smooth-transition": SmoothTransition = ParseVector3(value); break;
                         // Water clarity params (start/end/power/offset)
                         case "clarity": Clarity = ParseColor(value); break;
                         // Main textures to load afterwards
@@ -275,38 +342,19 @@ public class WaterXmlConfig
                         case "mirror-wave-pow": MirrorWavePow = ParseFloat(value); break;
                         case "mirror-wave-scale": MirrorWaveScale = ParseFloat(value); break;
                         case "mirror-wave-flow": MirrorWaveFlow = ParseFloat(value); break;
+                        // Configs for tessellation module
+                        case "tessellation-min-dist": TessMinDist = ParseFloat(value); break;
+                        case "tessellation-max-dist": TessMaxDist = ParseFloat(value); break;
+                        case "tessellation-subdivide": TessSubdivide = ParseFloat(value); break;
+                        case "tessellation-edge-length": TessEdgeLength = ParseFloat(value); break;
+                        case "tessellation-max-displacement": TessMaxDisp = ParseFloat(value); break;
                     }
                 }
             }
-
-            // We should be able to assign to water mesh description by now!?
-            if (MeshDescription.MESH_WATER >= MeshDescription.meshes?.Length) return;
-            MeshDescription mesh = MeshDescription.meshes[MeshDescription.MESH_WATER];
-
-            // Load the resources define by configuration
-            if (ShaderNearPath.IsBundle) ShaderNear = DataLoader.LoadAsset<Shader>(ShaderNearPath);
-            if (ShaderDistPath.IsBundle) ShaderDist = DataLoader.LoadAsset<Shader>(ShaderDistPath);
-            if (Albedo1Path.IsBundle) Albedo1 = DataLoader.LoadAsset<Texture>(Albedo1Path);
-            if (Albedo2Path.IsBundle) Albedo2 = DataLoader.LoadAsset<Texture>(Albedo2Path);
-            if (Normal1Path.IsBundle) Normal1 = DataLoader.LoadAsset<Texture>(Normal1Path);
-            if (Normal2Path.IsBundle) Normal2 = DataLoader.LoadAsset<Texture>(Normal2Path);
-
-            // Load the near water shader
-            if (ShaderNearPath.IsBundle)
-            {
-                ShaderNear = DataLoader.LoadAsset<Shader>(ShaderNearPath);
-                mesh.material.shader = ShaderNear;
-                SetupWaterMaterial(mesh.material);
-            }
-
-            // Load the distant water shader
-            if (ShaderDistPath.IsBundle)
-            {
-                ShaderDist = DataLoader.LoadAsset<Shader>(ShaderDistPath);
-                mesh.materialDistant.shader = ShaderDist;
-                SetupWaterMaterial(mesh.materialDistant);
-            }
-
+            // Late initialize water shader once parsed
+            // As original shader was assigned long ago
+            OcbWaterShader.IsLoaded = true;
+            MeshDescription.SetWaterQuality();
         }
     }
 

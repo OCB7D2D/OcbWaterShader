@@ -27,7 +27,7 @@ float _SurfaceContrast;
 #ifdef SPECULAR_WORKFLOW
     float _Shininess;
 #else
-    float _Glossiness;
+    float _Smoothness;
     float _Metallic;
 #endif
 
@@ -131,6 +131,46 @@ float _NormalMap1Flow;
 
 #ifdef DISTANT_SHADER
     sampler2D _ClipChunks;
+#endif
+
+//----------------------------------------------
+
+#ifdef EFFECT_TESSELLATE
+    #if defined(TESS_LENGTH_ALL)
+        float _TessEdgeLength;
+    #elif defined(TESS_LENGTH_CULL)
+        float _TessEdgeLength;
+        float _TessMaxDisp;
+    #else 
+        float _TessMinDist;
+        float _TessMaxDist;
+        float _TessSubdivide;
+    #endif
+#endif
+
+//----------------------------------------------
+
+#ifdef EFFECT_WIND
+    // Provided by vanilla
+    float _WindTime;
+    float _Wind;
+#endif
+
+//----------------------------------------------
+
+#ifdef EFFECT_SMOOTH_TRANSITION
+    float3 _SmoothTransition;
+#endif
+
+//----------------------------------------------
+
+#ifdef EFFECT_RESAMPLING
+   #ifdef DISTANT_RESAMPLE_NOFADE
+   #elif defined(DISTANT_RESAMPLE_NOISE)
+      float2 _DistantResampleNoise;
+   #else
+     float3  _DistantResampleParams;
+   #endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
