@@ -1,6 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 float WaterViewDepth(Input IN) {
+return IN.color.a;
     float rawZ = SAMPLE_DEPTH_TEXTURE_PROJ(_CameraDepthTexture, UNITY_PROJ_COORD(IN.screenPos));
     return DECODE_EYEDEPTH(rawZ) - IN.color.a; // delta between ground (z-buffer) and surface
 }

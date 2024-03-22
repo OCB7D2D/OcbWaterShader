@@ -176,7 +176,8 @@ Shader "OcbWaterDistantLow" {
 
         // Transparent-1 -> weird artifacts with biome particles
         // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
-        Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
+        // Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
+        Tags{ "Queue" = "Geometry" }
         //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
         // Cull Off

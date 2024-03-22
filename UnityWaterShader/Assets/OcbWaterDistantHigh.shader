@@ -184,7 +184,7 @@ Shader "OcbWaterDistantHigh" {
 
         CGPROGRAM
 
-        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade
+        #pragma surface surf Standard vertex:vert tessellate:tess // tessphong:_Phong alpha:fade
         // #pragma surface surf Standard addshadow fullforwardshadows vertex:vert tessellate:tess alpha:fade nolightmap
         // #pragma surface surf Standard vertex:vert alpha:fade
         // exclude_path:prepass noshadowmask noshadow

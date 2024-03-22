@@ -1,4 +1,6 @@
-﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
 
 // Copyright (c) 2016 Unity Technologies. MIT license - license_unity.txt
 // #NVJOB Water Shaders. MIT license - license_nvjob.txt
@@ -175,20 +177,81 @@ Shader "OcbWaterDetailLow" {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    SubShader
+    {
+        Tags { "Queue" = "Geometry" "RenderType" = "Opaque" }
+        LOD 200
+Blend SrcAlpha OneMinusSrcAlpha
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            // make fog work
+            #pragma multi_compile_fog
+            
+            #include "UnityCG.cginc"
+            #include "NvWaters/Noise.cginc"
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float2 uv : TEXCOORD0;
+            };
+
+            struct v2f
+            {
+                float2 uv : TEXCOORD0;
+                // UNITY_FOG_COORDS(1)
+                float4 screenPos : SV_POSITION;
+            };
+
+            sampler2D _AlbedoTex1;
+            float4 _AlbedoTex1_ST;
+            float2 _WorldDim;
+            
+            v2f vert (appdata v)
+            {
+                v2f o;
+
+                // compute world space position of the vertex
+                float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+                float2 uv = (worldPos.xz + _WorldDim.xy * 0.5) / _WorldDim.xy * 40;
+                float noise = Noise2D(uv * 12);
+                v.vertex.y += noise * 3;
+                o.screenPos = UnityObjectToClipPos(v.vertex);
+                o.uv = uv;
+                return o;
+            }
+            
+            fixed4 frag (v2f i) : SV_Target
+            {
+                fixed4 col = tex2D(_AlbedoTex1, i.uv);
+                col.a = 0.7;
+                return col;
+            }
+            ENDCG
+        }
+    }
+
+/*
     SubShader{
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Transparent-1 -> weird artifacts with biome particles
         // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
-        Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
+        // Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
+        Tags{ "Queue" = "Geometry+450" "RenderType" = "Transparent" }
+
         //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
         // Cull Off
         // ZWrite Off
+        Blend One OneMinusSrcAlpha
 
         CGPROGRAM
 
-        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade
+        #pragma surface surf Standard vertex:vert alpha:premul keepalpha
         // #pragma surface surf Standard addshadow fullforwardshadows vertex:vert tessellate:tess alpha:fade nolightmap
         // #pragma surface surf Standard vertex:vert alpha:fade
         // exclude_path:prepass noshadowmask noshadow
@@ -211,7 +274,7 @@ Shader "OcbWaterDetailLow" {
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
-
+*/
     FallBack "Legacy Shaders/Reflective/Bumped Diffuse"
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

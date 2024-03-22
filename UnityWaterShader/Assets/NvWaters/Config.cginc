@@ -38,7 +38,7 @@
 #define BLEND_NORMAL_RNM
 
 // Make water transparent at shore
-// #define EFFECT_DEPTH_ALPHA
+#define EFFECT_DEPTH_ALPHA
 
 // Fade according to wave height
 // Ranges from -1 to 1 normally

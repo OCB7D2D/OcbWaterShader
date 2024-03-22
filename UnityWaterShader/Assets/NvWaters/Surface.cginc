@@ -11,6 +11,7 @@
 
 float4 tess (appdata_full v0, appdata_full v1, appdata_full v2)
 {
+    return float4(3,3,3,2);
     #ifdef EFFECT_TESSELLATE
         #if defined(TESS_LENGTH_ALL)
             return UnityEdgeLengthBasedTess(v0.vertex, v1.vertex, v2.vertex,
@@ -39,7 +40,40 @@ void vert (inout appdata_full v)
     COMPUTE_EYEDEPTH(v.color.a);
     #ifdef EFFECT_TESSELLATE
         // Calculate world position to use for noise sampling
-        float3 wp = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1));
+        float3 wp = mul(unity_ObjectToWorld, v.vertex).xyz;
+        // UV coordinates to sample wave noise
+        float2 uv = wp.xz * _TessOptions[0];
+        // Move uv with wind
+        #ifdef EFFECT_WIND
+            // uv += _WindTime;
+        #endif
+        // Sample noise algorithm
+        float noise = Noise2D(uv);
+        // Muliply with wind speed
+        #ifdef EFFECT_WIND
+            noise *= _Wind * _TessOptions[3];
+        #endif
+        noise *= 2;
+        #ifndef EFFECT_TESSELLATE_NOWAVES
+            // Displace the vertex vertical to form waves
+            v.vertex.y += (noise * _TessOptions[1]) + _TessOptions[2];
+        #endif
+        // Store noise value for fragment shader
+        v.color.r = noise;
+    #endif
+}
+
+void vert333 (inout VertexData42 v)
+{
+    #ifdef DISTANT_SHADER
+        // move surface down to avoid bad seams
+        v.vertex.y += _DistantSurfaceOffset;
+    #endif
+    // Transfer eye-depth to fragment shader
+    COMPUTE_EYEDEPTH(v.color.a);
+    #ifdef EFFECT_TESSELLATE
+        // Calculate world position to use for noise sampling
+        float3 wp = mul(unity_ObjectToWorld, v.vertex).xyz;
         // UV coordinates to sample wave noise
         float2 uv = wp.xz * _TessOptions[0];
         // Move uv with wind
@@ -94,6 +128,8 @@ void vert (inout appdata_full v)
         o.Smoothness *= smooth;
         o.Metallic *= smooth;
     #endif
+
+// o.Alpha = 1;
 
 }
 

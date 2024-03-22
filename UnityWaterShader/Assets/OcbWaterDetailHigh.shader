@@ -177,14 +177,22 @@ Shader "OcbWaterDetailHigh" {
         // Transparent-1 -> weird artifacts with biome particles
         // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
         Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" }
-        //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
+
+        // BlendOp Add
+        // Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
         // Cull Off
         // ZWrite Off
 
+        Blend One OneMinusSrcAlpha
+
         CGPROGRAM
 
-        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade
+        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong keepalpha
+
+
+        // alpha
+        // alpha:fade
         // #pragma surface surf Standard addshadow fullforwardshadows vertex:vert tessellate:tess alpha:fade nolightmap
         // #pragma surface surf Standard vertex:vert alpha:fade
         // exclude_path:prepass noshadowmask noshadow
