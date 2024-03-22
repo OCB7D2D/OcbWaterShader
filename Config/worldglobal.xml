@@ -17,15 +17,28 @@
         <property name="normal1" value="#@modfolder:Resources/OcbWaterShader.unity3d?textures/waternormal1.png"/>
         <property name="normal2" value="#@modfolder:Resources/OcbWaterShader.unity3d?textures/waternormal2.png"/>
 
+        <!-- Attenuate albedo and normal according to depth -->
+        <property name="albedo-depth-fade" value="10, 0, 10, 0"/>
+        <property name="normal-depth-fade" value="10, 0, 10, 0"/>
+
+        <property name="wave-fade" value="0.45, 0, 0.45, 0"/>
+        <property name="depth-fade" value="10, 0, 10, 0"/>
+
         <!-- configure main PBR shader properties -->
-        <property name="metallic" value="0.175"/>
-        <property name="smoothness" value="0.875"/>
+        <property name="metallic" value="0.175,0.075"/>
+        <property name="smoothness" value="0.875,0.525"/>
 
         <!-- configure smooth transition from detail to distant -->
         <property name="smooth-transition" value="35,225,1.25"/>
 
         <!-- water clarity params (start/end/power/offset) -->
-        <property name="clarity" value="0.175,7.5,0.225,0"/>
+        <property name="clarity" value="0.175, 7.5, 0.225, 0"/>
+
+        <!-- settings for distant resampling -->
+        <property name="resample1-params" value="0.5, 50, 800, 1"/>
+        <property name="resample2-params" value="0.5, 50, 800, 1"/>
+        <property name="resample1-noise" value="0.5, 0.5"/>
+        <property name="resample2-noise" value="0.5, 0.5"/>
 
         <!-- scales for the different textures -->
         <property name="albedo1-scale" value="115,115"/>
@@ -68,7 +81,7 @@
 
         <!-- factors for final albedo color -->
         <property name="surface-intensity" value="0.85"/>
-        <property name="surface-contrast" value="0.025"/>
+        <property name="surface-contrast" value="0.85"/>
 
         <!-- settings for parallax module -->
         <property name="parallax-strength" value="0.003"/>

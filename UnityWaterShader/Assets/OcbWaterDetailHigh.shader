@@ -17,14 +17,32 @@ Shader "OcbWaterDetailHigh" {
         [HDR] _ShoreColor("Shore Color", Color) = (0.5, 0.5, 0.5, 1)
         [HDR] _SurfaceColor("Surface Color", Color) = (0.5, 0.5, 0.5, 1)
 
-        _Metallic("Metallic", Range(-1, 2)) = 0.0
-        _Smoothness("Smoothness", Range(0, 1)) = 0.5
+        //----------------------------------------------
+        // Basic smoothness and metallic settings
+        //----------------------------------------------
+        _Metallic("Metallic", Vector) = (0.15, 0, 0, 0)
+        _Smoothness("Smoothness", Vector) = (0.925, 0.5, 0, 0)
         // _Shininess("Shininess", Range(0.01, 1)) = 0.15
+
+        //----------------------------------------------
+        // Albedo and normal fading options
+        //----------------------------------------------
+        _WindFade("Wind Fading", Vector) = (0.45, 1, 0.25, 1)
+        _DepthFade("Depth Fading", Vector) = (0.45, 1, 0.25, 1)
+        _WaveFade("Wave Fading", Vector) = (0.45, 1, 0.25, 1)
+
+        //----------------------------------------------
+        // Wind Options (some global, some for effects)
+        //----------------------------------------------
+        // These are globally provided by vanilla game
+        // _WindTime("Wind Time", Range(-9999,9999)) = 0
+        // _Wind("Wind Speed", Range(1,32)) = 4
 
         _SurfaceIntensity("Brightness", Range(0.1, 5)) = 1
         _SurfaceContrast("Contrast", Range(-0.5, 3)) = 1
 
         //----------------------------------------------
+        // #ifdef EFFECT_ALBEDO1
         //----------------------------------------------
         [HDR] _Albedo1Color("Albedo 1 Color", Color) = (1,1,1,1)
         _AlbedoTex1("Albedo Texture 1", 2D) = "gray" {}
@@ -38,6 +56,7 @@ Shader "OcbWaterDetailHigh" {
         _Albedo2Flow("Albedo 2 Flow", float) = 1
 
         //----------------------------------------------
+        // #ifdef EFFECT_NORMALMAP1
         //----------------------------------------------
         _NormalMap1("Normal Map 1", 2D) = "bump" {}
         _NormalMap1Strength("Normal Map 1 Strength", Range(-3, 3)) = 0
@@ -110,8 +129,11 @@ Shader "OcbWaterDetailHigh" {
         //----------------------------------------------
         // Distant Resampling
         //----------------------------------------------
-        _DistantResampleParams("Distant Resample Params", Vector) = (0.25, 20, 40)
-        _DistantResampleNoise("Distant Resample Noise", Vector) = (0.5, 0.5, 0, 0)
+        _DistantResample1Params("Distant Resample Params 1", Vector) = (0.253, 20, 80, 1)
+        _DistantResample2Params("Distant Resample Params 2", Vector) = (0.217, 25, 95, 1)
+        _DistantResample1Noise("Distant Resample Noise 1", Vector) = (0.514, 0.514, 0, 0)
+        _DistantResample2Noise("Distant Resample Noise 2", Vector) = (0.375, 0.373, 0, 0)
+
         _SmoothTransition("Smooth Transition", Vector) = (25, 250, 0.75, 0)
 
         //----------------------------------------------
@@ -122,14 +144,21 @@ Shader "OcbWaterDetailHigh" {
         _TessSubdivide("Tessellation Subdivision", Range(1,32)) = 4 // for default mode
         _TessEdgeLength("Tessellation Edge Length", Range(1,256)) = 64 // for edge mode
         _TessMaxDisp("Tessellation Max Displacement", Range(1,256)) = 0.5 // edge cull mode
+        // Options for tessellation: uv scale, wave factor, wave offset, wind speed
+        _TessOptions("Tessellation Options", Vector) = (0.5, 0.5, -0.25, 1)
+        _DistantSurfaceOffset("Distant Surface offset", Range(-0.5, 0.5)) = -0.075
 
         //----------------------------------------------
         // 7D2D specific uniforms
         //----------------------------------------------
-        _Clarity("Water Clarity", Vector) = (0, 5, 2, 0)
         _WorldDim("World Dimensions", Vector) = (4096, 4096, 0, 0)
         // Never activate this, as it will overwrite global uniform!
         // _OriginPos("World Origin Shift", Vector) = (0, 0, 0, 0)
+
+        //----------------------------------------------
+        // Global options for final result
+        //----------------------------------------------
+        _Clarity("Water Clarity", Vector) = (0, 5, 2, 0)
 
         //----------------------------------------------
         // Options only for distant shader
@@ -137,8 +166,6 @@ Shader "OcbWaterDetailHigh" {
         // For distant shader to clip loaded chunks
         // _ClipChunks("ClipChunks", 2D) = "black" { }
 
-        // _WindTime("Wind Time", Range(-9999,9999)) = 0
-        // _Wind("Wind Speed", Range(1,32)) = 4
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,7 +201,6 @@ Shader "OcbWaterDetailHigh" {
         #include "NvWaters/Noise.cginc"
         #include "NvWaters/Functions.cginc"
         #include "NvWaters/Surface.cginc"
-        #include "NvWaters/Tessellate.cginc"
         //----------------------------------------------
 
         ENDCG

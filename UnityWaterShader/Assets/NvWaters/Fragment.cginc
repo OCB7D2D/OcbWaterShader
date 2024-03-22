@@ -37,26 +37,31 @@ float depth = WaterViewDepth(IN) + _Clarity.w;
 
 #ifdef EFFECT_RESAMPLING
     #ifdef _DISTANCERESAMPLENOFADE
-        float distanceBlend = 1;
+        float dblend1 = 0.618;
+        float dblend2 = 0.618;
     #elif defined(DISTANT_RESAMPLE_NOISE)
         #if _TRIPLANAR
-            float distanceBlend = 1 + FBM3D(worldPos * _DistantResampleNoise.x) * _DistantResampleNoise.y;
+            float dblend1 = 1 + FBM3D(worldPos * _DistantResample1Noise.x) * _DistantResample1Noise.y;
+            float dblend2 = 1 + FBM3D(worldPos * _DistantResample2Noise.x) * _DistantResample2Noise.y;
         #else
-            float distanceBlend = 1 + FBM2D(config.uv * _DistantResampleNoise.x) * _DistantResampleNoise.y;
+            float dblend1 = 1 + FBM2D(config.uv * _DistantResample1Noise.x) * _DistantResample1Noise.y;
+            float dblend2 = 1 + FBM2D(config.uv * _DistantResample2Noise.x) * _DistantResample2Noise.y;
         #endif
     #else
-        float distanceBlend = saturate((camDist - _DistantResampleParams.y) / (_DistantResampleParams.z - _DistantResampleParams.y));
+        float dblend1 = saturate((camDist - _DistantResample1Params.y) / (_DistantResample1Params.z - _DistantResample1Params.y));
+        float dblend2 = saturate((camDist - _DistantResample2Params.y) / (_DistantResample2Params.z - _DistantResample2Params.y));
     #endif
-    float dblend0 = distanceBlend;
-    float dblend1 = distanceBlend;
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Apply texture tiling scale and offset
-float2 UVA1 = TRANSFORM_TEX(UV, _AlbedoTex1);
-float2 UVN1 = TRANSFORM_TEX(UV, _NormalMap1);
-
+#ifdef EFFECT_ALBEDO1
+    float2 UVA1 = TRANSFORM_TEX(UV, _AlbedoTex1);
+#endif
+#ifdef EFFECT_NORMALMAP1
+    float2 UVN1 = TRANSFORM_TEX(UV, _NormalMap1);
+#endif
 #ifdef EFFECT_ALBEDO2
     float2 UVA2 = TRANSFORM_TEX(UV, _AlbedoTex2);
 #endif
@@ -106,60 +111,87 @@ float3 albedo = _SurfaceColor;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef EFFECT_ALBEDO1
-    float4 tex1 = tex2D(_AlbedoTex1, UVA1) * _Albedo1Color;
-    #ifdef EFFECT_RESAMPLING
-        float2 uv1 = UVA1 * _DistantResampleParams.x;
-        float4 distant1 = tex2D(_AlbedoTex1, uv1);
-        tex1 = lerp(tex1, distant1 * _Albedo1Color, dblend0);
-    #endif
-    albedo = lerp(albedo, tex1, saturate(IN.color.r * 0.35 + 0.12));
-#endif
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 #ifdef EFFECT_ALBEDO2
-    float4 tex2 = tex2D(_AlbedoTex2, UVA2) * _Albedo2Color;
+    float4 albedo2 = tex2D(_AlbedoTex2, UVA2) * _Albedo2Color;
     #ifdef EFFECT_RESAMPLING
-        float2 uv2 = UVA2 * _DistantResampleParams.x;
+        float2 uv2 = UVA2 * _DistantResample2Params.x;
         float4 distant2 = tex2D(_AlbedoTex2, uv2);
-        tex2 = lerp(tex2, distant2 * _Albedo2Color, dblend1);
+        albedo2 = lerp(albedo2, distant2 * _Albedo2Color, dblend2);
     #endif
-    albedo = lerp(albedo, tex2, saturate(IN.color.r * 0.5 + 0.09));
+    albedo = lerp(albedo, albedo2, _SurfaceIntensity);
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-float3 normal = float3(0,0,1); //UnpackNormalScaled(float4(0,0,1,0), 1);
+#ifdef EFFECT_ALBEDO1
+    float4 albedo1 = tex2D(_AlbedoTex1, UVA1) * _Albedo1Color;
+    #ifdef EFFECT_RESAMPLING
+        float2 uv1 = UVA1 * _DistantResample1Params.x;
+        float4 distant1 = tex2D(_AlbedoTex1, uv1);
+        albedo1 = lerp(albedo1, distant1 * _Albedo1Color, dblend1);
+    #endif
+    albedo = lerp(albedo, albedo1, _SurfaceIntensity);
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef EFFECT_DEPTH_FADE
+    albedo = lerp(albedo, _SurfaceColor, smoothstep(
+        _DepthFade[1], _DepthFade[2], depth));
+#endif
+#ifdef EFFECT_WAVE_FADE
+    albedo = lerp(albedo, _SurfaceColor, smoothstep(
+        _WaveFade[0], _WaveFade[1], IN.color.r));
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Init default screen normal
+float3 normal = float3(0,0,1);
 
 #ifdef EFFECT_NORMALMAP1
-    float3 norm1 = UnpackNormalScaled(tex2D(_NormalMap1, UVN1), _NormalMap1Strength);
+    float3 normal1 = UnpackNormalScaled(tex2D(_NormalMap1, UVN1), _NormalMap1Strength);
     #ifdef EFFECT_RESAMPLING
-        float4 normd1 = tex2D(_NormalMap1, UVN1 * _DistantResampleParams.x);
+        float4 normd1 = tex2D(_NormalMap1, UVN1 * _DistantResample1Params.x);
         normd1.xyz = UnpackNormalScaled(normd1, _NormalMap1Strength);
-        BlendNormal(norm1, normd1.xyz);
+        normd1.xyz = lerp(normal1, normd1.xyz, dblend1);
+        BlendNormal(normal1, normd1.xyz);
     #endif
     #ifdef EFFECT_MICROWAVE
         float4 mw1 = tex2D(_NormalMap1, UVN1 * _MicrowaveScale);
         mw1.xyz = UnpackNormalScaled(mw1, _MicrowaveStrength);
-        BlendNormal(norm1, mw1.xyz);
+        mw1.xyz = lerp(normal1, mw1.xyz, dblend1);
+        BlendNormal(normal1, mw1.xyz);
     #endif
-    BlendNormal(normal, norm1);
+    normal1 = lerp(normal, normal1, _SurfaceContrast);
+    BlendNormal(normal, normal1);
 #endif
 
 #ifdef EFFECT_NORMALMAP2
-    float3 norm2 = UnpackNormalScaled(tex2D(_NormalMap2, UVN2), _NormalMap2Strength);
+    float3 normal2 = UnpackNormalScaled(tex2D(_NormalMap2, UVN2), _NormalMap2Strength);
     #ifdef EFFECT_RESAMPLING
-        float4 normd2 = tex2D(_NormalMap2, UVN2 * _DistantResampleParams.x);
+        float4 normd2 = tex2D(_NormalMap2, UVN2 * _DistantResample2Params.x);
         normd2.xyz = UnpackNormalScaled(normd2, _NormalMap2Strength);
-        BlendNormal(norm2, normd2.xyz);
+        normd2.xyz = lerp(normal2, normd2.xyz, dblend2);
+        BlendNormal(normal2, normd2.xyz);
     #endif
     #ifdef EFFECT_MICROWAVE
         float4 mw2 = tex2D(_NormalMap2, (UVN1 + UVN2) * _MicrowaveScale);
         mw2.xyz = UnpackNormalScaled(mw2, _MicrowaveStrength);
-        BlendNormal(norm2, mw2.xyz);
+        mw2.xyz = lerp(normal2, mw2.xyz, dblend2);
+        BlendNormal(normal2, mw2.xyz);
     #endif
-    BlendNormal(normal, norm2);
+    normal2 = lerp(normal, normal2, _SurfaceContrast);
+    BlendNormal(normal, normal2);
+#endif
+
+#ifdef EFFECT_DEPTH_FADE
+    normal = lerp(normal, float3(0,0,1), smoothstep(
+        _DepthFade[2], _DepthFade[3], depth));
+#endif
+#ifdef EFFECT_WAVE_FADE
+    normal = lerp(normal, float3(0,0,1), smoothstep(
+        _WaveFade[2], _WaveFade[3], IN.color.r));
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,15 +212,28 @@ float3 normal = float3(0,0,1); //UnpackNormalScaled(float4(0,0,1,0), 1);
 
 o.Albedo = saturate(albedo);
 o.Normal = normalize(normal);
-o.Alpha = WaterClarity(depth);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#ifdef EFFECT_WIND
+float fadeAlbedo = 0;
+float fadeNormal = 0;
+
+#if defined(EFFECT_WIND) && defined(EFFECT_WIND_FADE)
     // Make surface mono-color when weather is calm
-    o.Albedo = lerp(_SurfaceColor, o.Albedo, (_Wind * 0.55 + 0.45) * _SurfaceIntensity);
+    fadeAlbedo = smoothstep(_WindFade[0], _WindFade[1], _Wind);
     // Make normal less distorted when weather is calm
-    o.Normal = normalize(lerp(float3(0,0,1), o.Normal, (_Wind * 0.75 + 0.25)) * _SurfaceIntensity);
+    fadeNormal = smoothstep(_WindFade[2], _WindFade[3], _Wind);
+#endif
+
+o.Albedo = saturate(lerp(o.Albedo, _SurfaceColor, fadeAlbedo));
+o.Normal = normalize(lerp(o.Normal, float3(0,0,1), fadeNormal));
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifdef EFFECT_DEPTH_ALPHA
+    o.Alpha = WaterClarity(depth);
+#else
+    o.Alpha = 1;
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

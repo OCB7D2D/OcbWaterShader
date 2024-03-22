@@ -27,16 +27,18 @@ float _SurfaceContrast;
 #ifdef SPECULAR_WORKFLOW
     float _Shininess;
 #else
-    float _Smoothness;
-    float _Metallic;
+    float2 _Metallic;
+    float2 _Smoothness;
 #endif
 
 //----------------------------------------------
 
-float4 _Albedo1Color;
-sampler2D _AlbedoTex1;
-float4 _AlbedoTex1_ST;
-float _Albedo1Flow;
+#ifdef EFFECT_ALBEDO1
+    float4 _Albedo1Color;
+    sampler2D _AlbedoTex1;
+    float4 _AlbedoTex1_ST;
+    float _Albedo1Flow;
+#endif
 
 #ifdef EFFECT_ALBEDO2
     float4 _Albedo2Color;
@@ -47,16 +49,28 @@ float _Albedo1Flow;
 
 //----------------------------------------------
 
-sampler2D _NormalMap1;
-float4 _NormalMap1_ST;
-float _NormalMap1Strength;
-float _NormalMap1Flow;
+#ifdef EFFECT_NORMALMAP1
+    sampler2D _NormalMap1;
+    float4 _NormalMap1_ST;
+    float _NormalMap1Strength;
+    float _NormalMap1Flow;
+#endif
 
 #ifdef EFFECT_NORMALMAP2
     sampler2D _NormalMap2;
     float4 _NormalMap2_ST;
     float _NormalMap2Strength;
     float _NormalMap2Flow;
+#endif
+
+//----------------------------------------------
+
+#ifdef EFFECT_DEPTH_FADE
+    float4 _DepthFade;
+#endif
+
+#ifdef EFFECT_WAVE_FADE
+    float4 _WaveFade;
 #endif
 
 //----------------------------------------------
@@ -136,6 +150,7 @@ float _NormalMap1Flow;
 //----------------------------------------------
 
 #ifdef EFFECT_TESSELLATE
+    float4 _TessOptions;
     #if defined(TESS_LENGTH_ALL)
         float _TessEdgeLength;
     #elif defined(TESS_LENGTH_CULL)
@@ -151,6 +166,10 @@ float _NormalMap1Flow;
 //----------------------------------------------
 
 #ifdef EFFECT_WIND
+    // Custom settings
+    #ifdef EFFECT_WIND_FADE
+        float4 _WindFade;
+    #endif
     // Provided by vanilla
     float _WindTime;
     float _Wind;
@@ -165,12 +184,19 @@ float _NormalMap1Flow;
 //----------------------------------------------
 
 #ifdef EFFECT_RESAMPLING
+   float4  _DistantResample1Params;
+   float4  _DistantResample2Params;
    #ifdef DISTANT_RESAMPLE_NOFADE
    #elif defined(DISTANT_RESAMPLE_NOISE)
-      float2 _DistantResampleNoise;
-   #else
-     float3  _DistantResampleParams;
+      float2 _DistantResample1Noise;
+      float2 _DistantResample2Noise;
    #endif
+#endif
+
+//----------------------------------------------
+
+#ifdef DISTANT_SHADER
+    float _DistantSurfaceOffset;
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

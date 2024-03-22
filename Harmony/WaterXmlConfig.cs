@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using System.Xml;
 using System.Xml.Linq;
 using UnityEngine;
 using static StringParsers;
@@ -17,8 +16,8 @@ public class WaterXmlConfig
     public static Shader ShaderNear;
     public static Shader ShaderDist;
     // Base PBR lighting config
-    public static float Metallic = 0.175f;
-    public static float Smoothness = 0.725f;
+    public static Vector2 Metallic = new Vector2(0.175f, 0.075f);
+    public static Vector2 Smoothness = new Vector2(0.875f, 0.525f);
     // Smooth transition to distant shader
     public static Vector3 SmoothTransition;
     // Water clarity params (start/end/power/offset)
@@ -46,6 +45,10 @@ public class WaterXmlConfig
     public static float Albedo2Flow = 0;
     public static float NormalMap1Flow = 0;
     public static float NormalMap2Flow = 0;
+    // Attenuate albedo and normal according to depth
+    public static Vector4 DepthFade = new Vector4(10.0f, 0.0f, 10.0f, 0.0f);
+    public static Vector4 WaveFade = new Vector4(0.45f, 0.0f, 0.45f, 0.0f);
+    public static Vector4 WindFade = new Vector4(0.35f, 0.75f, 0.55f, 0.95f);
     // Normal strengths for various features
     public static float NormalMap1Strength = 0.175f;
     public static float NormalMap2Strength = 0.325f;
@@ -99,13 +102,18 @@ public class WaterXmlConfig
     public static float TessSubdivide = 4;
     public static float TessEdgeLength = 64;
     public static float TessMaxDisp = 0.5f;
+    // Settings for distant resampling
+    public static Vector4 Resample1Params = new Vector4(0.5f, 50, 800, 1);
+    public static Vector4 Resample2Params = new Vector4(0.5f, 50, 800, 1);
+    public static Vector2 Resample1Noise = new Vector2(0.5f, 0.5f);
+    public static Vector2 Resample2Noise = new Vector2(0.5f, 0.5f);
 
 
     public static void SetupWaterMaterial(Material water)
     {
 
-        water.SetFloat("_Metallic", WaterXmlConfig.Metallic);
-        water.SetFloat("_Smoothness", WaterXmlConfig.Smoothness);
+        water.SetVector("_Metallic", WaterXmlConfig.Metallic);
+        water.SetVector("_Smoothness", WaterXmlConfig.Smoothness);
 
         // Params for smooth transition to distant shader (min/max/details)
         water.SetVector("_SmoothTransition", WaterXmlConfig.SmoothTransition);
@@ -140,6 +148,11 @@ public class WaterXmlConfig
         water.SetTextureScale("_NormalMap2", WaterXmlConfig.Normal2Scale);
         water.SetTextureOffset("_NormalMap2", WaterXmlConfig.Normal2Offset);
         water.SetFloat("_NormalMap2Flow", WaterXmlConfig.NormalMap2Flow);
+
+        // Attenuate albedo and normal according to depth
+        water.SetVector("_DepthFade", WaterXmlConfig.DepthFade);
+        water.SetVector("_WaveFade", WaterXmlConfig.WaveFade);
+        water.SetVector("_WindFade", WaterXmlConfig.WindFade);
 
         // Settings for microwave module
         water.SetFloat("_MicrowaveStrength", WaterXmlConfig.MicrowaveStrength);
@@ -181,8 +194,10 @@ public class WaterXmlConfig
         water.SetFloat("_FoamLacunary", WaterXmlConfig.FoamLacunary);
 
         // Settings for distant resampling
-        water.SetVector("_DistantResampleParams", new Vector3(0.5f, 50, 800));
-        water.SetVector("_DistantResampleNoise", new Vector2(0.5f, 0.5f));
+        water.SetVector("_DistantResample1Params", WaterXmlConfig.Resample1Params);
+        water.SetVector("_DistantResample2Params", WaterXmlConfig.Resample2Params);
+        water.SetVector("_DistantResample1Noise", WaterXmlConfig.Resample1Noise);
+        water.SetVector("_DistantResample2Noise", WaterXmlConfig.Resample2Noise);
 
         // Settings for tessellation module
         water.SetFloat("_TessMinDist", WaterXmlConfig.TessMinDist);
@@ -190,6 +205,9 @@ public class WaterXmlConfig
         water.SetFloat("_TessSubdivide", WaterXmlConfig.TessSubdivide);
         water.SetFloat("_TessEdgeLength", WaterXmlConfig.TessEdgeLength);
         water.SetFloat("_TessMaxDisp", WaterXmlConfig.TessMaxDisp);
+
+        // Settings for wind effect
+        water.SetVector("_WindFade", WaterXmlConfig.WindFade);
 
         // Below uniforms are only for specular setup
 
@@ -270,8 +288,8 @@ public class WaterXmlConfig
                         case "mac-shader": MetalShaderNearPath = DataLoader.ParseDataPathIdentifier(value); break;
                         case "mac-distant": MetalShaderDistPath = DataLoader.ParseDataPathIdentifier(value); break;
                         // Base PBR lighting config
-                        case "metallic": Metallic = ParseFloat(value); break;
-                        case "smoothness": Smoothness = ParseFloat(value); break;
+                        case "metallic": Metallic = ParseVector2(value); break;
+                        case "smoothness": Smoothness = ParseVector2(value); break;
                         // Smooth transition to distant shader to avoid reflection issues
                         case "smooth-transition": SmoothTransition = ParseVector3(value); break;
                         // Water clarity params (start/end/power/offset)
@@ -281,6 +299,12 @@ public class WaterXmlConfig
                         case "albedo2": Albedo2Path = DataLoader.ParseDataPathIdentifier(value); break;
                         case "normal1": Normal1Path = DataLoader.ParseDataPathIdentifier(value); break;
                         case "normal2": Normal2Path = DataLoader.ParseDataPathIdentifier(value); break;
+
+                        // Attenuate albedo and normal dynamically
+                        case "depth-fade": DepthFade = ParseVector4(value); break;
+                        case "wave-fade": WaveFade = ParseVector4(value); break;
+                        case "wind-fade": WindFade = ParseVector4(value); break;
+
                         // Texture uv scale and offets
                         case "albedo1-scale": Albedo1Scale = ParseVector2(value); break;
                         case "albedo2-scale": Albedo2Scale = ParseVector2(value); break;
@@ -348,6 +372,11 @@ public class WaterXmlConfig
                         case "tessellation-subdivide": TessSubdivide = ParseFloat(value); break;
                         case "tessellation-edge-length": TessEdgeLength = ParseFloat(value); break;
                         case "tessellation-max-displacement": TessMaxDisp = ParseFloat(value); break;
+                        // Configs for distant resampling
+                        case "resample1-params": Resample1Params = ParseVector4(value); break;
+                        case "resample1-noise": Resample1Noise = ParseVector2(value); break;
+                        case "resample2-params": Resample2Params = ParseVector4(value); break;
+                        case "resample2-noise": Resample2Noise = ParseVector2(value); break;
                     }
                 }
             }

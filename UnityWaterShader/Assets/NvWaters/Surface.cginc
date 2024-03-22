@@ -32,31 +32,34 @@ float4 tess (appdata_full v0, appdata_full v1, appdata_full v2)
 void vert (inout appdata_full v)
 {
     #ifdef DISTANT_SHADER
-        // move distant down
-        v.vertex.y -= 0.075;
+        // move surface down to avoid bad seams
+        v.vertex.y += _DistantSurfaceOffset;
     #endif
+    // Transfer eye-depth to fragment shader
+    COMPUTE_EYEDEPTH(v.color.a);
     #ifdef EFFECT_TESSELLATE
         // Calculate world position to use for noise sampling
         float3 wp = mul(unity_ObjectToWorld, float4(v.vertex.xyz, 1));
         // UV coordinates to sample wave noise
-        float2 uv = wp.xz * 0.5;
+        float2 uv = wp.xz * _TessOptions[0];
         // Move uv with wind
         #ifdef EFFECT_WIND
-            uv += _WindTime;
+            // uv += _WindTime;
         #endif
         // Sample noise algorithm
         float noise = Noise2D(uv);
         // Muliply with wind speed
         #ifdef EFFECT_WIND
-            noise *= _Wind;
+            noise *= _Wind * _TessOptions[3];
         #endif
-        // Modify the vertex to form waves
-        v.vertex.y += (noise * 0.5) - 0.25;
+        noise *= 2;
+        #ifndef EFFECT_TESSELLATE_NOWAVES
+            // Displace the vertex vertical to form waves
+            v.vertex.y += (noise * _TessOptions[1]) + _TessOptions[2];
+        #endif
         // Store noise value for fragment shader
         v.color.r = noise;
     #endif
-    // Transfer eye-depth to fragment shader
-    COMPUTE_EYEDEPTH(v.color.a);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,15 +77,15 @@ void vert (inout appdata_full v)
         o.Specular = _Shininess;
         o.Gloss = tex.a;
     #else
-        o.Metallic = _Metallic;
-        o.Smoothness = _Smoothness;
+        #ifdef EFFECT_WIND
+            o.Metallic = lerp(_Metallic[0], _Metallic[1], _Wind);
+            o.Smoothness = lerp(_Smoothness[0], _Smoothness[1], _Wind);
+        #else
+            o.Metallic = lerp(_Metallic[0], _Metallic[1], 0.25);
+            o.Smoothness = lerp(_Smoothness[0], _Smoothness[1], 0.25);
+        #endif
     #endif
 
-    #ifdef EFFECT_WIND
-        // Accentuate smoothness if it is windy
-        // More reflective when weather is calm
-        o.Smoothness *= 1 - _Wind * 0.425;
-    #endif
 
     // Transition smoothness to avoid distant shader to look odd
     // Seems reflection is only done for the close/detail terrain
