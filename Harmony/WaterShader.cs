@@ -13,7 +13,24 @@ public class OcbWaterShader : IModApi
         Log.Out("OCB Harmony Patch: " + GetType().ToString());
         Harmony harmony = new Harmony(GetType().ToString());
         harmony.PatchAll(Assembly.GetExecutingAssembly());
+        PatchWindFrameUpdate(harmony);
         ModEvents.GameShutdown.RegisterHandler(OnGameShutdown);
+    }
+
+		// Conditionally applies the postfix patch to WeathManager.WindFrameUpdate
+		// based on whether we're running a dedicated server or not.
+    private void PatchWindFrameUpdate(Harmony harmony)
+    {
+      if(GameManager.IsDedicatedServer){
+        return;
+      }
+
+      MethodInfo targetMethod = AccessTools.Method(typeof(WeatherManager), "WindFrameUpdate");
+      MethodInfo patchMethod = AccessTools.Method(typeof(WeatherManagerWindFrameUpdate), "Postfix");
+
+      if(targetMethod != null && patchMethod != null){
+        harmony.Patch(targetMethod, prefix: new HarmonyMethod(patchMethod));
+      }
     }
 
     // Hook to reset the loaded flag
@@ -68,7 +85,6 @@ public class OcbWaterShader : IModApi
 */
 
     // Hook to animate the wind zone a bit more than vanilla
-    [HarmonyPatch(typeof(WeatherManager), "WindFrameUpdate")]
     static class WeatherManagerWindFrameUpdate
     {
 
