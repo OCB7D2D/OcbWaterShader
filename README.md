@@ -207,6 +207,10 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 ## Changelog
 
+### Version 0.3.1
+
+- Fix issue with dedicated servers
+
 ### Version 0.3.0
 
 - Add geometry tessellation for waves

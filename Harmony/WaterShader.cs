@@ -10,6 +10,7 @@ public class OcbWaterShader : IModApi
 
     public void InitMod(Mod mod)
     {
+        if (GameManager.IsDedicatedServer) return;
         Log.Out("OCB Harmony Patch: " + GetType().ToString());
         Harmony harmony = new Harmony(GetType().ToString());
         harmony.PatchAll(Assembly.GetExecutingAssembly());
