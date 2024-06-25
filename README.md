@@ -1,11 +1,13 @@
-# OCB Water Shader Mod  - 7 Days to Die (A21) Addon
+# OCB Water Shader Mod  - 7 Days to Die (V1.0 exp) Addon
 
 Replacing vanilla water shader with an improved version [based on][4]:  
 https://github.com/nvjob/nvjob-water-shader-simple-and-fast
 
 You need to disable EAC to use this mod!
 
-## Download
+[![GitHub CI Compile Status][7]][6]
+
+## Download and Install
 
 End-Users are encouraged to download my mods from [NexusMods][3].  
 Every download there helps me to buy stuff for mod development.
@@ -207,6 +209,10 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 ## Changelog
 
+### Version 0.4.0
+
+- First compatibility with V1.0 (exp)
+
 ### Version 0.3.1
 
 - Fix issue with dedicated servers
@@ -230,12 +236,10 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 - Initial version
 
-## Compatibility
-
-Developed initially for version a20.7(b1), updated through A21.0(b313).
-
 [1]: https://github.com/OCB7D2D/OcbWaterShader
 [2]: https://github.com/OCB7D2D/OcbWaterShader/releases
 [3]: https://www.nexusmods.com/7daystodie/mods/2880
 [4]: https://assetstore.unity.com/packages/vfx/shaders/water-shaders-v2-x-149916
 [5]: https://github.com/OCB7D2D/OcbWaterShader/blob/master/Config/worldglobal.xml
+[6]: https://github.com/OCB7D2D/OcbWaterShader/actions/workflows/ci.yml
+[7]: https://github.com/OCB7D2D/OcbWaterShader/actions/workflows/ci.yml/badge.svg
