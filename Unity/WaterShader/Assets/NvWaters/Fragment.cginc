@@ -162,9 +162,9 @@ float3 vz = IN.worldPos.xyz;
 vx.x -= sampleDist;
 vz.z -= sampleDist;
 
-vy.y += (noiseY * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
-vx.y += (noiseX * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
-vz.y += (noiseZ * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
+vy.y += (noiseY * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
+vx.y += (noiseX * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
+vz.y += (noiseZ * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
 
 o.Normal = normal = normalize(cross(vz.xyz - vy.xyz, vx.xyz - vy.xyz)).xzy;
 
@@ -242,9 +242,9 @@ float fadeNormal = 0;
 
 #if defined(EFFECT_WIND) && defined(EFFECT_WIND_FADE)
     // Make surface mono-color when weather is calm
-    fadeAlbedo = smootherstep(_WindFade[0], _WindFade[1], _Wind);
+    fadeAlbedo = smootherstep(_WindFade[0], _WindFade[1], _Wind.x);
     // Make normal less distorted when weather is calm
-    fadeNormal = smootherstep(_WindFade[2], _WindFade[3], _Wind);
+    fadeNormal = smootherstep(_WindFade[2], _WindFade[3], _Wind.x);
 #endif
 
 o.Albedo = saturate(lerp(o.Albedo, _SurfaceColor, fadeAlbedo));

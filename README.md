@@ -209,6 +209,12 @@ ws set o _NormalMap1 7,13 // set uv offset
 
 ## Changelog
 
+### Version 0.4.1
+
+- Attenuate AO for better distant transition
+- Allows to bring back better reflections
+- Add fix for new Wind parameter format
+
 ### Version 0.4.0
 
 - First compatibility with V1.0 (exp)

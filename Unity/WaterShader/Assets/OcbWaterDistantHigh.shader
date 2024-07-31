@@ -185,20 +185,14 @@ Shader "OcbWaterDistantHigh" {
     SubShader{
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // Transparent-1 -> weird artifacts with biome particles
-        // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
         Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
-        //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
-        // Cull Off
         ZWrite Off
 
         CGPROGRAM
 
-        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade noshadow // noshadow
-        // #pragma surface surf Standard addshadow fullforwardshadows vertex:vert tessellate:tess alpha:fade nolightmap
-        // #pragma surface surf Standard vertex:vert alpha:fade
-        // exclude_path:prepass noshadowmask noshadow
+        #pragma surface surf Standard vertex:vert alpha:fade noshadow
+        // #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade noshadow
 
         float _Phong;
         #pragma target 4.6
@@ -206,7 +200,6 @@ Shader "OcbWaterDistantHigh" {
         //----------------------------------------------
         #define QUALITY_HIGH
         #define DISTANT_SHADER
-#define _SPECULARHIGHLIGHTS_OFF 1 
         #include "NvWaters/Config.cginc"
         #include "NvWaters/Structs.cginc"
         #include "NvWaters/Params.cginc"
@@ -219,6 +212,8 @@ Shader "OcbWaterDistantHigh" {
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
+
+    // FallBack "Legacy Shaders/Reflective/Bumped Diffuse"
 
     FallBack off
 

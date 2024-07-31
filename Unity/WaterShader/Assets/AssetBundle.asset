@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9aafab5ec24e3a468cbf65f5c7e23b0, type: 3}
   m_Name: AssetBundle
   m_EditorClassIdentifier: 
-  Path: ..\..\Resources\OcbWaterShader.unity3d
+  Path: ..\..\..\Resources\OcbWaterShader.unity3d
   IncludeAssetsFromFolders: 0
   SearchFoldersRecursively: 0
   CreateDeterministicAssetBundle: 1

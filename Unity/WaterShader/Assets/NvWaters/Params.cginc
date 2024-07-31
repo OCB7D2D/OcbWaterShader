@@ -191,12 +191,10 @@ float4 _WaveOptions;
     #ifdef EFFECT_WIND_FADE
         float4 _WindFade;
     #endif
-    // Provided by vanilla
-    // float _WindTime;
-    float _Wind;
 #endif
 
-float _WindTime;
+// Provided by vanilla
+float4 _Wind;
 
 //----------------------------------------------
 

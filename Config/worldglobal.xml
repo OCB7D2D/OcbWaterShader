@@ -33,8 +33,10 @@
 
         <!-- configure main PBR shader properties -->
         <property name="metallic" value="0.175,0.075"/>
-        <property name="smoothness" value="0.722,0.588"/>
-        <!-- <property name="smoothness" value="0.715,0.295"/> -->
+        <!-- smoothness has weird hard reflection transitions -->
+        <!-- E.g. at certain values it will become much sharper -->
+        <!-- <property name="smoothness" value="0.722,0.588"/> -->
+        <property name="smoothness" value="0.935,0.85"/>
 
         <!-- configure smooth transition from detail to distant -->
         <property name="smooth-transition" value="35,225,1.25"/>

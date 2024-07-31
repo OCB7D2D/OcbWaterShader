@@ -185,42 +185,14 @@ Shader "OcbWaterDetailHigh" {
     SubShader{
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        // Transparent-1 -> weird artifacts with biome particles
-        // "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
-// "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"
-
-// Tags{ "Queue" = "Geometry+501" "RenderType" = "Transparent" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True"  }
-//         //Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
-//         LOD 200
-//         Cull Off
-//         ZWrite Off
-
-
         Tags{ "Queue" = "Transparent" "RenderType" = "Transparent" "IgnoreProjector" = "True" "ForceNoShadowCasting" = "True" }
-        // Blend One OneMinusSrcAlpha, One OneMinusSrcAlpha
         LOD 200
-        // Cull Off
         ZWrite Off
-/*
-Pass {
-            Tags{ "LightMode" = "MotionVectors" }
-            CGPROGRAM
 
-            #include "MotionVectors.cginc"
-            #pragma vertex VertMotionVectors
-            #pragma fragment FragMotionVectors
-
-            ENDCG
-}
-*/
         CGPROGRAM
 
-
-// addshadow fullforwardshadows 
-        #pragma surface surf Standard vertex:vert alpha:fade noshadow // tessellate:tess tessphong:_Phong
-// nolightmap
-        // #pragma surface surf Standard vertex:vert alpha:fade
-        // exclude_path:prepass noshadowmask noshadow
+        // #pragma surface surf Standard vertex:vert alpha:fade noshadow
+        #pragma surface surf Standard vertex:vert tessellate:tess tessphong:_Phong alpha:fade noshadow
 
         float _Phong;
         #pragma target 4.6

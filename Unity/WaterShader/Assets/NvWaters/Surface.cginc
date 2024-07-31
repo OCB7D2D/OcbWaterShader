@@ -42,14 +42,16 @@ fixed VertexNoise(fixed2 uv)
     uv *= _WaveOptions[0];
     // Move uv with wind
     #ifdef EFFECT_WIND
-        // uv += _WindTime * _WaveOptions[3];
-        uv += _NvWatersMovement.xy * _WaveOptions[3]; // * _Wind + 0.025;
+        // uv += _Wind.y * _WaveOptions[3];
+        uv += _NvWatersMovement.xy * _WaveOptions[3]; // * _Wind.x + 0.025;
+        // uv.x += (offset.x + offset.y) / 1.4142135623730950488016887242097;
+        // uv.y += (offset.y - offset.x) / 1.4142135623730950488016887242097;
     #endif
     // Sample noise algorithm
     float noise = Noise2D(uv);
     // Muliply with wind speed
     #ifdef EFFECT_WIND
-        noise = noise * _Wind; // - 0.35 * _Wind;
+        noise = noise * _Wind.x; // - 0.35 * _Wind.x;
     #endif
     return noise;
 }
@@ -72,7 +74,7 @@ void vert (inout appdata_full v)
         float noiseY = WavesNoise2(wp.xz, float2(0, 0));
         // Displace the vertex vertical (up/down) to form waves
         #if defined(EFFECT_DISPLACE_VERTEX) || defined(EFFECT_DISPLACE_NORMAL)
-            v0.y += (noiseY * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
+            v0.y += (noiseY * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
         #endif
         // Update vertex position (if not disabled)
         // Normals without displayment look weird!
@@ -101,8 +103,8 @@ void vert (inout appdata_full v)
             float noiseX = VertexNoise(mul(unity_ObjectToWorld, vx).xz);
             float noiseZ = VertexNoise(mul(unity_ObjectToWorld, vz).xz);
             // Now compute displacement noise for neighbours in x and z
-            vx.y += (noiseX * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
-            vz.y += (noiseZ * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
+            vx.y += (noiseX * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
+            vz.y += (noiseZ * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
             // Recalculate normal from positions of displaced neighbours
             float3 vn = normalize(cross(vz.xyz - v0.xyz, vx.xyz - v0.xyz));
             v.normal.xyz = vn;
@@ -117,8 +119,8 @@ void vert (inout appdata_full v)
             float noiseX = VertexNoise(wpx.xz);
             float noiseZ = VertexNoise(wpz.xz);
             // Now compute displacement noise for neighbours in x and z
-            wpx.y += (noiseX * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
-            wpz.y += (noiseZ * _WaveOptions[1]) + _WaveOptions[2] * _Wind;
+            wpx.y += (noiseX * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
+            wpz.y += (noiseZ * _WaveOptions[1]) + _WaveOptions[2] * _Wind.x;
             // Recalculate normal from positions of displaced neighbours
             float3 vn = normalize(cross(wpz.xyz - wp.xyz, wpx.xyz - wp.xyz));
             v.normal = mul(unity_WorldToObject, vn);
@@ -145,25 +147,36 @@ void vert (inout appdata_full v)
         o.Gloss = tex.a;
     #else
         #ifdef EFFECT_WIND
-            o.Metallic = lerp(_Metallic[0], _Metallic[1], _Wind);
-            o.Smoothness = lerp(_Smoothness[0], _Smoothness[1], _Wind);
+            o.Metallic = lerp(_Metallic[0], _Metallic[1], _Wind.x);
+            o.Smoothness = lerp(_Smoothness[0], _Smoothness[1], _Wind.x);
         #else
             o.Metallic = lerp(_Metallic[0], _Metallic[1], 0.25);
             o.Smoothness = lerp(_Smoothness[0], _Smoothness[1], 0.25);
         #endif
     #endif
 
+    o.Albedo = saturate(o.Albedo);
+
+    // o.Occlusion = 0.25 + 0.5 * o.Smoothness;
+    // Has weird transition to distant
+    o.Occlusion = 0;
+
     // Transition smoothness to avoid distant shader to look odd
     // Seems reflection is only done for the close/detail terrain
     #ifdef EFFECT_SMOOTH_TRANSITION
         float smooth = pow(smoothstep(_SmoothTransition.y,  _SmoothTransition.x, IN.color.a), _SmoothTransition.z);
-        o.Smoothness *= smooth;
+        smooth = saturate(smooth);
+        o.Occlusion = smooth * 0.5;
+        // o.Albedo = fixed4(smooth, smooth, smooth, 1);
+        // o.Smoothness *= smooth;
         o.Metallic *= smooth;
     #endif
 
-    o.Albedo = saturate(o.Albedo);
 
-    o.Occlusion = 0.25 + 0.5 * o.Smoothness;
+    // o.Albedo = fixed4(0, 0, 1, 1);
+    // o.Smoothness = _Smoothness[0];
+    // o.Metallic = _Metallic[0];
+    // o.Normal = fixed3(0, 0, 1);
 
 }
 
