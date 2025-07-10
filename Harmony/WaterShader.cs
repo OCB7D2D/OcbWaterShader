@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Reflection;
 using UnityEngine;
 
@@ -18,7 +19,7 @@ public class OcbWaterShader : IModApi
     }
 
     // Hook to reset the loaded flag
-    private void OnGameShutdown()
+    private void OnGameShutdown(ref ModEvents.SGameShutdownData _)
     {
         IsLoaded = false;
     }
