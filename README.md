@@ -1,4 +1,4 @@
-# OCB Water Shader Mod  - 7 Days to Die (V2.0) Addon
+# OCB Water Shader Mod  - 7 Days to Die (V2.1) Addon
 
 Replacing vanilla water shader with an improved version [based on][4]:  
 https://github.com/nvjob/nvjob-water-shader-simple-and-fast
